@@ -1,4 +1,4 @@
-import { use, useState } from 'react'
+import {useState, useCallback, useEffect, useRef} from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -6,9 +6,48 @@ import './App.css'
 function App() {
 
   const [password, setPassword] = useState("")
-  const [range, setRange] = useState(2)
+  const [Range, setRange] = useState(2)
   const [numA, setNumA] = useState(false)
   const [spChar, setSpChar] = useState(false)
+
+  const passWordRef = useRef(null)
+
+  const copyPassToClipBoard = useCallback(()=>{
+    passWordRef.current?.select();
+    passWordRef.current?.setSelectionRange(0,25)
+    window.navigator.clipboard.writeText(password)
+  },[password])
+
+  const generatePass = useCallback(()=>{
+    let ans="";
+    let Pass = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    if(numA){
+      Pass += "0123456789"
+      Pass += "0123456789"
+    }
+    if(spChar){
+      Pass += "`~!@#$%^&*()_{}|[]:?/.,<>"
+    }
+
+    let n = Pass.length;
+    console.log(n);
+    // console.log(index);
+    
+    for (let i = 0; i < Range; i++) {
+      let index = Math.floor((Math.random()*n)+1);
+      ans += Pass.charAt(index);
+      
+    }
+
+    setPassword(ans);
+  },[Range,numA,spChar, setPassword])
+  
+  // return generatePass();
+  // generatePass();
+
+  useEffect(()=>{
+    generatePass();
+  },[Range,spChar,numA,setPassword])
 
   return (
     <>
@@ -21,25 +60,47 @@ function App() {
             className='outline-none w-full py-1 px-3'
             placeholder='Password'
             readOnly
-            style={{ backgroundColor: '#72a0de8f' }}>
+            style={{ backgroundColor: '#72a0de8f' }}
+            ref={passWordRef}>
           </input>
           <button className='px-1.5 text-black-200'
             style={{ backgroundColor: '#ffffffff' }}
-            onClick={() => { }}>
+            onClick={copyPassToClipBoard}>
             <b>COPY</b>
           </button>
         </div>
-        {/* <div className='flex text-sm gap-x-2'>
-          <div className='flex items-centre gap-x-1'>
+        <div className='flex text-sm gap-x-2'>
+          <div className='flex items-centre gap-x-1 text-white'>
             <input type='range'
               min={2}
               max={25}
-              value={range}
-              className='cursor-pointer'>
-              <label>{range}</label>
+              value={Range}
+              className='cursor-pointer'
+              onChange={(e)=>{setRange(e.target.value)}}>
             </input>
+              <label>{Range}</label>
           </div>
-        </div> */}
+
+
+          <div className='flex items-centre gap-x-1'>
+            <input type='checkbox'
+              defaultChecked={numA}
+              // value={numA}
+              onChange={()=>{setNumA((prev)=>!prev)}}>
+            </input>
+              <label className='text-white'>Number</label>
+          </div>
+
+
+          <div className='flex items-centre gap-x-1'>
+            <input type='checkbox'
+              defaultChecked={spChar}
+              // value={numA}
+              onChange={()=>{setSpChar((prev)=>!prev)}}>
+            </input>
+              <label className='text-white'>Special Character</label>
+          </div>
+        </div>
       </div>
     </>
   )
